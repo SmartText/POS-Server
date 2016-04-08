@@ -58,7 +58,11 @@ class NLPService {
       StringBuilder sb  = new StringBuilder();
       BufferedReader br = new BufferedReader(new InputStreamReader(in));
 
-      JsonArrayBuilder sentences_ab = Json.createArrayBuilder();
+      // Extract headers from exchange and add content-type
+      Headers headers = t.getResponseHeaders();
+      headers.add("Content-Type", "application/json");
+      t.sendResponseHeaders(200, 0);
+      OutputStream os = t.getResponseBody();
 
       for (List<HasWord> sentence : new DocumentPreprocessor(br)) {
         Tree parse = lp.apply(sentence);
@@ -84,17 +88,10 @@ class NLPService {
             .add("dep", dep)
             .add("tree", parse.toString())
           .build();
-        sentences_ab.add(sentence_ab);
+        // Write processed sentence as soon as available to create a streaming service
+        os.write((sentence_ab.toString()+"\n").getBytes());
       }
 
-      // Extract headers from exchange and add content-type
-      Headers headers = t.getResponseHeaders();
-      headers.add("Content-Type", "application/json");
-
-      String response = sentences_ab.build().toString();
-      t.sendResponseHeaders(200, response.length());
-      OutputStream os = t.getResponseBody();
-      os.write(response.getBytes());
       os.close();
     }
   }
