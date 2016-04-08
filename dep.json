@@ -1,0 +1,22 @@
+{
+   "maintainer": ["Varun Mittal <varun91@uw.edu>"],
+   "commands": [
+       ["install", "make wget unzip"],
+       "mkdir -p /pos-server",
+       ["add", "src /pos-server/src"],
+       ["add", "javax /pos-server/javax"],
+       ["add", "Makefile /pos-server/Makefile"],
+       ["add", "start_server.sh /pos-server/start_server.sh"],
+       "cd /pos-server/ && make all",
+       ["purge", "make wget unzip"]
+   ],
+   "entrypoint": [
+      "cd /pos-server && ./start_server.sh"
+   ],
+   "depends": [
+      "openjdk8"
+   ],
+   "expose": [
+      "8080"
+   ]
+}
