@@ -4,7 +4,7 @@ ENV DEBIAN_FRONTEND noninteractive
 ENV HOME /root
 RUN apt-get update
 RUN apt-get install -y --force-yes --no-install-recommends software-properties-common apt-transport-https
-RUN repo_add ppa:openjdk-r/ppa
+RUN add-apt-repository -y 'ppa:openjdk-r/ppa'
 RUN apt-get -y update --allow-unauthenticated
 RUN apt-get install -y --force-yes --no-install-recommends openjdk-8-jdk make wget unzip
 #Git/SmartText/POS-Server.json
