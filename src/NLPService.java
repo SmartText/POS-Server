@@ -82,6 +82,7 @@ class NLPService {
             .build();
           wordPos += 1;
           tokens_ab.add(wordToken);
+          wordToken = null;
         }
         JsonObject sentence_ab = Json.createObjectBuilder()
             .add("tokens", tokens_ab)
@@ -90,6 +91,16 @@ class NLPService {
           .build();
         // Write processed sentence as soon as available to create a streaming service
         os.write((sentence_ab.toString()+"\n").getBytes());
+
+        // Mark objects null for grabage collections
+        parse = null;
+        dep = null;
+        gs  = null;
+        tdl = null;
+        sentence_ab = null;
+        tokens_ab = null;
+        sentence  = null;
+        System.gc();
       }
 
       os.close();
