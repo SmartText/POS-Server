@@ -64,43 +64,50 @@ class NLPService {
       t.sendResponseHeaders(200, 0);
       OutputStream os = t.getResponseBody();
 
-      for (List<HasWord> sentence : new DocumentPreprocessor(br)) {
-        Tree parse = lp.apply(sentence);
-        GrammaticalStructure gs = gsf.newGrammaticalStructure(parse);
-        Collection tdl = gs.typedDependenciesCCprocessed();
-        String dep     = tdl.toString();
+      String inp_sentence;
+      while ((inp_sentence = br.readLine()) != null) {
+        StringReader r_inp_sentence = new StringReader(inp_sentence);
 
-        JsonArrayBuilder tokens_ab = Json.createArrayBuilder();
-        ListIterator<HasWord> litr = sentence.listIterator();
-        int wordPos = 1;
-        while(litr.hasNext()) {
-          HasWord word = litr.next();
+        for (List<HasWord> sentence : new DocumentPreprocessor(r_inp_sentence)) {
+          Tree parse = lp.apply(sentence);
+          GrammaticalStructure gs = gsf.newGrammaticalStructure(parse);
+          Collection tdl = gs.typedDependenciesCCprocessed();
+          String dep     = tdl.toString();
 
-          JsonObject wordToken = Json.createObjectBuilder()
-              .add("word", word.word())
-              .add("pos", wordPos)
+          JsonArrayBuilder tokens_ab = Json.createArrayBuilder();
+          ListIterator<HasWord> litr = sentence.listIterator();
+          int wordPos = 1;
+          while(litr.hasNext()) {
+            HasWord word = litr.next();
+
+            JsonObject wordToken = Json.createObjectBuilder()
+                .add("word", word.word())
+                .add("pos", wordPos)
+              .build();
+            wordPos += 1;
+            tokens_ab.add(wordToken);
+            wordToken = null;
+          }
+          JsonObject sentence_ab = Json.createObjectBuilder()
+              .add("tokens", tokens_ab)
+              .add("dep", dep)
+              .add("tree", parse.toString())
             .build();
-          wordPos += 1;
-          tokens_ab.add(wordToken);
-          wordToken = null;
-        }
-        JsonObject sentence_ab = Json.createObjectBuilder()
-            .add("tokens", tokens_ab)
-            .add("dep", dep)
-            .add("tree", parse.toString())
-          .build();
-        // Write processed sentence as soon as available to create a streaming service
-        os.write((sentence_ab.toString()+"\n").getBytes());
+          // Write processed sentence as soon as available to create a streaming service
+          os.write((sentence_ab.toString()+"\n").getBytes());
 
-        // Mark objects null for grabage collections
-        parse = null;
-        dep = null;
-        gs  = null;
-        tdl = null;
-        sentence_ab = null;
-        tokens_ab = null;
-        sentence  = null;
-        System.gc();
+          // Mark objects null for grabage collections
+          parse = null;
+          dep = null;
+          gs  = null;
+          tdl = null;
+          sentence_ab = null;
+          tokens_ab = null;
+          sentence  = null;
+          r_inp_sentence = null;
+
+          System.gc();
+        }
       }
 
       os.close();
